@@ -96,6 +96,7 @@
 	grub2-mkconfig -o /boot/grub2/grub.cfg
 	cd /boot ; for i in `ls initramfs-*img`; do dracut -v $i `echo $i|sed "s/initramfs-//g;s/.img//g"` --force; done
 
+<b>Создание LVM raid1 для /var</b>
 Из двух дисков собрал LVM raid1.
 
 	pvcreate /dev/sdc /dev/sdd
@@ -124,6 +125,7 @@
 	vgremove /dev/vg_root
 	pvremove /dev/sdb
 
+<b>Создание LVM тома под /var</b>
 На VolGroup00 создал том для /home, создал ФС и примонтировал в /mnt.
 
 	lvcreate -n LogVol_Home -L 2G /dev/VolGroup00
@@ -141,35 +143,46 @@
 
 	echo "`blkid | grep Home | awk '{print $2}'` /home xfs defaults 0 0" >> /etc/fstab
 
-Сгенерируем файлý в /home/:
-[root@otuslinux ~]# touch /home/file{1..20}
-Снāтþ снапшот:
-[root@otuslinux ~]# lvcreate -L 100MB -s -n home_snap /dev/VolGroup00/LogVol_Home
-Удалитþ частþ файлов:
-[root@otuslinux ~]# rm -f /home/file{11..20}
-Процесс восстановлениā со снапшота:
-[root@otuslinux ~]# umount /home
-[root@otuslinux ~]# lvconvert --merge /dev/VolGroup00/home_snap
-[root@otuslinux ~]# mount /home
+<b>Создание спапшота и восстановление</b>
+Создал в /home/ файлы
 
+	touch /home/file{1..25}
+	
+Снял снапшот
 
-NAME                       MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-sda                          8:0    0   40G  0 disk
-├─sda1                       8:1    0    1M  0 part
-├─sda2                       8:2    0    1G  0 part /boot
-└─sda3                       8:3    0   39G  0 part
-  ├─VolGroup00-LogVol00    253:0    0    8G  0 lvm  /
-  ├─VolGroup00-LogVol01    253:1    0  1.5G  0 lvm  [SWAP]
-  └─VolGroup00-LogVol_Home 253:2    0    2G  0 lvm  /home
-sdb                          8:16   0   10G  0 disk
-sdc                          8:32   0    2G  0 disk
-├─vg_var-lv_var_rmeta_0    253:3    0    4M  0 lvm
-│ └─vg_var-lv_var          253:7    0  952M  0 lvm  /var
-└─vg_var-lv_var_rimage_0   253:4    0  952M  0 lvm
-  └─vg_var-lv_var          253:7    0  952M  0 lvm  /var
-sdd                          8:48   0    1G  0 disk
-├─vg_var-lv_var_rmeta_1    253:5    0    4M  0 lvm
-│ └─vg_var-lv_var          253:7    0  952M  0 lvm  /var
-└─vg_var-lv_var_rimage_1   253:6    0  952M  0 lvm
-  └─vg_var-lv_var          253:7    0  952M  0 lvm  /var
-sde                          8:64   0    1G  0 disk
+	lvcreate -L 100MB -s -n home_snap /dev/VolGroup00/LogVol_Home
+
+Удалил несколько файлов
+
+	rm -f /home/file{9..21}
+	
+Восстановил из снапшота.
+
+	umount /home
+	lvconvert --merge /dev/VolGroup00/home_snap
+	mount /home
+
+<details> <summary>Вывод lsblk после всех действий:</summary>
+	
+	NAME                       MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+	sda                          8:0    0   40G  0 disk
+	├─sda1                       8:1    0    1M  0 part
+	├─sda2                       8:2    0    1G  0 part /boot
+	└─sda3                       8:3    0   39G  0 part
+  	├─VolGroup00-LogVol00    253:0    0    8G  0 lvm  /
+  	├─VolGroup00-LogVol01    253:1    0  1.5G  0 lvm  [SWAP]
+  	└─VolGroup00-LogVol_Home 253:2    0    2G  0 lvm  /home
+	sdb                          8:16   0   10G  0 disk
+	sdc                          8:32   0    2G  0 disk
+	├─vg_var-lv_var_rmeta_0    253:3    0    4M  0 lvm
+	│ └─vg_var-lv_var          253:7    0  952M  0 lvm  /var
+	└─vg_var-lv_var_rimage_0   253:4    0  952M  0 lvm
+  	└─vg_var-lv_var          253:7    0  952M  0 lvm  /var
+	sdd                          8:48   0    1G  0 disk
+	├─vg_var-lv_var_rmeta_1    253:5    0    4M  0 lvm
+	│ └─vg_var-lv_var          253:7    0  952M  0 lvm  /var
+	└─vg_var-lv_var_rimage_1   253:6    0  952M  0 lvm
+  	└─vg_var-lv_var          253:7    0  952M  0 lvm  /var
+	sde                          8:64   0    1G  0 disk
+
+</details>
