@@ -43,12 +43,12 @@
 
 Смонтировал системные директории в /mnt/ и сделал /mnt/ корнем
 
-	  mount --bind /proc /mnt/proc
-	  mount --bind /dev /mnt/dev
-	  mount --bind /sys /mnt/sys
-	  mount --bind /run /mnt/run
-    mount --bind /boot /mnt/boot
-	  chroot /mnt/
+	mount --bind /proc /mnt/proc
+	mount --bind /dev /mnt/dev
+	mount --bind /sys /mnt/sys
+	mount --bind /run /mnt/run
+	mount --bind /boot /mnt/boot
+	chroot /mnt/
   
 Создал новый конфиг grub и изменил в нем rd.lvm.lv=VolGroup00/LogVol00 на rd.lvm.lv=vg_root/lv_root
     
