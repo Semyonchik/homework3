@@ -1,4 +1,5 @@
 <b>Уменьшение тома под /</b>
+
 <details> <summary>Вывод lsblk и lvmdiskscan при загрузке:</summary>
 	
 		NAME                    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
@@ -97,6 +98,7 @@
 	cd /boot ; for i in `ls initramfs-*img`; do dracut -v $i `echo $i|sed "s/initramfs-//g;s/.img//g"` --force; done
 
 <b>Создание LVM raid1 для /var</b>
+
 Из двух дисков собрал LVM raid1.
 
 	pvcreate /dev/sdc /dev/sdd
@@ -125,7 +127,8 @@
 	vgremove /dev/vg_root
 	pvremove /dev/sdb
 
-<b>Создание LVM тома под /var</b>
+<b>Создание LVM тома под /home</b>
+
 На VolGroup00 создал том для /home, создал ФС и примонтировал в /mnt.
 
 	lvcreate -n LogVol_Home -L 2G /dev/VolGroup00
@@ -144,6 +147,7 @@
 	echo "`blkid | grep Home | awk '{print $2}'` /home xfs defaults 0 0" >> /etc/fstab
 
 <b>Создание спапшота и восстановление</b>
+
 Создал в /home/ файлы
 
 	touch /home/file{1..25}
